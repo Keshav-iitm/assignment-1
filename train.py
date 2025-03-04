@@ -33,3 +33,22 @@ args = parser.parse_args()
 # Data Preprocessing:
 (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
 
+#------------------------------------------Question 1 - Visualizing sample images------------------------------------------------------------------------------------------------------
+def visualize_samples(X, y, num_samples=5):
+    plt.figure(figsize=(12, 3))
+    for i in range(num_samples):
+        plt.subplot(1, num_samples, i+1)
+        plt.imshow(X[i], cmap='gray')
+        plt.title(f"Label: {y[i]}")
+        plt.axis('off')
+    plt.tight_layout()
+    plt.show()
+
+
+visualize_samples(X_train, y_train)
+
+X_train = X_train.reshape(X_train.shape[0], -1).astype('float32') / 255
+X_test = X_test.reshape(X_test.shape[0], -1).astype('float32') / 255
+
+print(f"Training data shape: {X_train.shape}")
+print(f"Test data shape: {X_test.shape}")
