@@ -52,3 +52,61 @@ X_test = X_test.reshape(X_test.shape[0], -1).astype('float32') / 255
 
 print(f"Training data shape: {X_train.shape}")
 print(f"Test data shape: {X_test.shape}")
+
+#-------------------------------------------Question 2 - Feedforward NeuralNetwork-------------------------------------------------------------------------------------------
+
+class FeedforwardNeuralNetwork:
+    def __init__(self, input_size, num_classes, num_layers, hidden_size, activation):
+        self.input_size = input_size
+        self.num_classes = num_classes
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.activation = activation
+        
+        self.weights = []
+        self.biases = []
+        
+        # Input layer to first hidden layer
+        self.weights.append(np.random.randn(hidden_size, input_size) * 0.01)
+        self.biases.append(np.zeros((hidden_size, 1)))
+        
+        # Hidden layers
+        for _ in range(num_layers - 1):
+            self.weights.append(np.random.randn(hidden_size, hidden_size) * 0.01)
+            self.biases.append(np.zeros((hidden_size, 1)))
+        
+        # Last hidden layer to output layer
+        self.weights.append(np.random.randn(num_classes, hidden_size) * 0.01)
+        self.biases.append(np.zeros((num_classes, 1)))
+
+    def forward(self, X):
+        self.Z = []
+        self.A = [X.T]  # X is now (batch_size, 784)
+        for i in range(self.num_layers):
+            z = np.dot(self.weights[i], self.A[-1]) + self.biases[i]
+            a = self.activate(z)
+            self.Z.append(z)
+            self.A.append(a)
+    
+        # Output layer
+        z = np.dot(self.weights[-1], self.A[-1]) + self.biases[-1]
+        self.Z.append(z)
+        self.A.append(self.softmax(z))
+    
+        return self.A[-1].T
+
+
+    def activate(self, Z):
+        if self.activation == "sigmoid":
+            return 1 / (1 + np.exp(-Z))
+        elif self.activation == "tanh":
+            return np.tanh(Z)
+        elif self.activation == "ReLU":
+            return np.maximum(0, Z)
+        else:  # identity
+            return Z
+
+    def softmax(self, Z):
+        exp_Z = np.exp(Z - np.max(Z, axis=0, keepdims=True))
+        return exp_Z / np.sum(exp_Z, axis=0, keepdims=True)
+    
