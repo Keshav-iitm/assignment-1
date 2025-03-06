@@ -359,3 +359,113 @@ for name, optimizer in optimizers.items():
 print("\nFinal Test Accuracies:")
 for name, accuracy in results.items():
     print(f"{name}: {accuracy:.2f}%")
+
+
+
+#--------------------------------------------------QUESTION 4,5,6 : WANDB----------------------------------------------------------------------------------------------------
+from sklearn.model_selection import train_test_split
+
+# Defining a dictionary for optimizers with lower-case keys
+optimizers_sweep = {
+    "sgd": SGD,
+    "momentum": Momentum,
+    "nag": NAG,
+    "rmsprop": RMSprop,
+    "adam": Adam,
+    "nadam": Nadam
+}
+
+# Auxiliary function for computing cross-entropy loss
+def cross_entropy_loss(nn, X, y):
+    outputs = nn.forward(X)  # shape (m, num_classes)
+    m = X.shape[0]
+    # One-hot encode labels
+    y_encoded = np.eye(nn.num_classes)[y]
+    loss = -np.sum(y_encoded * np.log(outputs + 1e-8)) / m
+    return loss
+
+# Sweep training function
+def sweep_train():
+    run = wandb.init()   # Initializing Wandb for this run
+    config = wandb.config
+
+    #meaningful run name (e.g., hl_3_bs_16_ac_tanh)
+    run.name = f"hl_{config.num_layers}_bs_{config.batch_size}_ac_{config.activation}"
+    run.save()
+
+    # Loading data from Fashion MNIST and spliting into train/validation/test
+    (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train, y_train, test_size=0.1, random_state=42
+    )
+
+    # Preprocess: flatten and normalize
+    X_train = X_train.reshape(X_train.shape[0], -1).astype("float32") / 255
+    X_val = X_val.reshape(X_val.shape[0], -1).astype("float32") / 255
+    X_test = X_test.reshape(X_test.shape[0], -1).astype("float32") / 255
+
+    # Creating a new neural network instance with hyperparameters from wandb.config
+    sweep_nn = FeedforwardNeuralNetwork(
+        input_size=784,
+        num_classes=10,
+        num_layers=config.num_layers,
+        hidden_size=config.hidden_size,
+        activation=config.activation,
+    )
+
+    # Creating the optimizer instance using our sweep dictionary (keys in lower-case)
+    chosen_opt = config.optimizer.lower()
+    optimizer_class = optimizers_sweep.get(chosen_opt)
+    if optimizer_class is None:
+        raise ValueError(f"Unknown optimizer: {config.optimizer}")
+    sweep_optimizer = optimizer_class(config.learning_rate)
+
+    # Training loop
+    for epoch in range(config.epochs):
+        for i in range(0, len(X_train), config.batch_size):
+            X_batch = X_train[i : i + config.batch_size]
+            y_batch = y_train[i : i + config.batch_size]
+
+            _ = sweep_nn.forward(X_batch)
+            gradients = sweep_nn.backward(X_batch, y_batch)
+            sweep_nn.weights, sweep_nn.biases = sweep_optimizer.update(
+                sweep_nn.weights, sweep_nn.biases, gradients
+            )
+
+        # Computing metrics after each epoch
+        train_acc = calculate_accuracy(sweep_nn, X_train, y_train)
+        val_acc = calculate_accuracy(sweep_nn, X_val, y_val)
+        train_loss = cross_entropy_loss(sweep_nn, X_train, y_train)
+        val_loss = cross_entropy_loss(sweep_nn, X_val, y_val)
+
+        wandb.log({
+            "epoch": epoch,
+            "train_loss": train_loss,
+            "val_loss": val_loss,
+            "train_accuracy": train_acc,
+            "val_accuracy": val_acc,
+        })
+
+# Sweep configuration (with a meaningful name format)
+sweep_config = {
+    "method": "bayes",
+    "metric": {"name": "val_accuracy", "goal": "maximize"},
+    "parameters": {
+        "epochs": {"values": [5, 10]},
+        "num_layers": {"values": [3, 4, 5]},
+        "hidden_size": {"values": [32, 64, 128]},
+        "weight_decay": {"values": [0, 0.0005, 0.5]},
+        "learning_rate": {"values": [1e-3, 1e-4]},
+        "optimizer": {"values": ["sgd", "momentum", "nag", "rmsprop", "adam", "nadam"]},
+        "batch_size": {"values": [16, 32, 64]},
+        "weight_init": {"values": ["random", "Xavier"]},
+        "activation": {"values": ["sigmoid", "tanh", "ReLU"]},
+    },
+    "name": "hl_{num_layers}_bs_{batch_size}_ac_{activation}",
+}
+
+# Initializing the sweep 
+sweep_id = wandb.sweep(sweep_config, project="fashion_mnist_sweep_clean")
+
+# Launch the sweep agent, 60 trials
+wandb.agent(sweep_id, sweep_train, count=10)
