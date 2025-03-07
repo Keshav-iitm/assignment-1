@@ -469,3 +469,104 @@ sweep_id = wandb.sweep(sweep_config, project="fashion_mnist_sweep_clean")
 
 # Launch the sweep agent, 60 trials
 wandb.agent(sweep_id, sweep_train, count=10)
+#-------------------------------------------------------Question 7 - Confusion Matrix----------------------------------------------------------------------------
+#Accurate results of Question 7 are obtained after commenting out Question 6.
+import wandb
+import numpy as np
+import matplotlib
+
+matplotlib.use('Agg') 
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score
+from keras.datasets import fashion_mnist
+
+
+sweep_config = {
+    "method": "grid",
+    "name": "hl_5_bs_64_ac_ReLU",  
+    "metric": {"name": "test_accuracy", "goal": "maximize"},
+    "parameters": {
+        "epochs": {"values": [5]},
+        "batch_size": {"values": [16]},
+        "learning_rate": {"values": [0.001]},
+        "num_layers": {"values": [5]},
+        "hidden_size": {"values": [64]},  # Best model: hl_5_bs_64_ac_ReLU
+        "activation": {"values": ["ReLU"]},
+        "optimizer": {"values": ["nadam"]}  
+    }
+}
+
+# Initializing the sweep
+sweep_id = wandb.sweep(sweep_config, project="fashion_mnist_sweep")
+
+# Defining training function for sweep
+def sweep_train():
+    run_name = f"hl_5_bs_64_ac_ReLU"  
+    run = wandb.init(name=run_name)
+    config = wandb.config
+
+    # Loading Fashion MNIST 
+    (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+
+    # Preprocess data
+    X_train = X_train.reshape(X_train.shape[0], -1).astype("float32") / 255.0
+    X_test = X_test.reshape(X_test.shape[0], -1).astype("float32") / 255.0
+
+    # Instantiating model with current hyperparameters
+    model = FeedforwardNeuralNetwork(
+        input_size=784,
+        num_classes=10,
+        num_layers=config.num_layers,
+        hidden_size=config.hidden_size,
+        activation=config.activation
+    )
+
+    optimizer = Nadam(config.learning_rate)
+
+    # Training loop with backpropagation
+    num_samples = X_train.shape[0]
+    for epoch in range(config.epochs):
+        permutation = np.random.permutation(num_samples)
+        X_train_shuffled = X_train[permutation]
+        y_train_shuffled = y_train[permutation]
+
+        for i in range(0, num_samples, config.batch_size):
+            X_batch = X_train_shuffled[i:i + config.batch_size]
+            y_batch = y_train_shuffled[i:i + config.batch_size]
+            _ = model.forward(X_batch)
+            gradients = model.backward(X_batch, y_batch)
+            model.weights, model.biases = optimizer.update(model.weights, model.biases, gradients)
+
+        # Calculating training accuracy after each epoch, logging in WANDB
+        train_acc = calculate_accuracy(model, X_train, y_train)
+        print(f"Epoch {epoch + 1}/{config.epochs}: Train Accuracy: {train_acc:.2f}%")
+        wandb.log({"Epoch": epoch + 1, "Train Accuracy": train_acc})
+
+    # Evaluating on test set
+    test_output = model.forward(X_test)
+    predictions = np.argmax(test_output, axis=1)
+    test_acc = accuracy_score(y_test, predictions)
+    print(f"Test Accuracy: {test_acc * 100:.2f}%")
+    wandb.log({"Test Accuracy": test_acc})
+
+    cm = confusion_matrix(y_test, predictions)
+
+    wandb_table = wandb.Table(columns=["Predicted Label", "Actual Label", "Count"])
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            wandb_table.add_data(str(i), str(j), cm[i, j])
+
+    wandb.log({"Confusion Matrix Table": wandb_table})
+
+    #Confusion matrix for the table
+    class_names = [f'Class {i}' for i in range(cm.shape[0])]
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
+    fig, ax = plt.subplots(figsize=(10, 10))
+    disp.plot(ax=ax, cmap="viridis", values_format="d")
+    ax.set_title(f"Confusion Matrix (Run: {run.name})", fontsize=16)
+    plt.tight_layout()
+    wandb.log({"Confusion Matrix": wandb.Image(fig)})
+    plt.close(fig)
+
+wandb.agent(sweep_id, function=sweep_train)
+#*******************************************************END OF CODE*********************************************************************************************************
