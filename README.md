@@ -1,6 +1,6 @@
 # A B Keshav Kumar - AE24S021
 # Assignment 1 - Fashion MNIST
-# Assignment 1 - Backpropagation from Scratch
+
 
 ## 🔗 Links:
 - **Weights & Biases (WandB) Link**: [https://wandb.ai/ae24s021-indian-institute-of-technology-madras/fashion_mnist_sweep_clean/reports/DA6401-Assignment-1-Submission-AE24S021-A-B-Keshav-Kumar---VmlldzoxMTY4MDM2NA]
