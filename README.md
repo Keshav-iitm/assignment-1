@@ -66,3 +66,6 @@ Train multiple models and track results in wandb
   - Access Results in WandB
 All logs, including losses, accuracy, and hyperparameter comparisons, can be viewed on the wandb project dashboard.
 
+## Contributer:
+A B Keshav Kumar (AE24S021)
+Indian Institute of Technology, Madras.
