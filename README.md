@@ -107,5 +107,5 @@ text
 - **Confusion Matrix**: Generated for the best model and logged to WandB.
 
 ## Contributer:
-A B Keshav Kumar 
+A B Keshav Kumar, 
 Indian Institute of Technology, Madras.
