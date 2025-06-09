@@ -35,11 +35,11 @@ text
 
 ## Usage
 
-1. **Clone the repository or copy the script** (e.g., `main.py`).
+1. **Clone the repository or copy the script** (e.g., `train.py`).
 
 2. **Run the script**:
 
-python main.py
+python train.py
 
 text
 
@@ -49,7 +49,7 @@ By default, this will train a neural network on the Fashion MNIST dataset with d
 
 You can specify arguments such as the optimizer, learning rate, batch size, etc. For example:
 
-python main.py --optimizer adam --learning_rate 0.001 --batch_size 64 --num_layers 3 --hidden_size 128
+python train.py --optimizer adam --learning_rate 0.001 --batch_size 64 --num_layers 3 --hidden_size 128
 
 text
 
@@ -60,7 +60,7 @@ For a full list of arguments, see the script's argument parser.
 To launch a WandB sweep (requires a WandB account and login):
 
 wandb login
-python main.py
+python train.py
 
 text
 
@@ -72,7 +72,7 @@ The sweep configuration is defined in the script. You can adjust the parameters 
 - **Confusion matrix**: Generated and logged to WandB if a sweep is active.
 
 ## Example Command
-python main.py --optimizer nadam --learning_rate 0.001 --batch_size 64 --num_layers 5 --hidden_size 64 --activation ReLU
+python train.py --optimizer nadam --learning_rate 0.001 --batch_size 64 --num_layers 5 --hidden_size 64 --activation ReLU
 text
 
 ## WandB Sweep Configuration
@@ -98,7 +98,7 @@ sweep_config = {
 text
 
 ## File Structure
-- **main.py**: Main script for training and evaluation.
+- **train.py**: Main script for training and evaluation.
 - **README.md**: This file.
 
 ## Notes
