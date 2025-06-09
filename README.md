@@ -1,5 +1,5 @@
 # Basic Feed forward and Backpropogation
-This repository was submitted as a part of assignment 1 - DA6401, Deep Learning, IIT Madras.
+This repository was submitted as a part of Assignment 1 - DA6401, Deep Learning, IIT Madras.
 
 
 ## 🔗 Links:
