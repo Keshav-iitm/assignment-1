@@ -1,7 +1,6 @@
-# NAME :  A B KESHAV KUMAR
-# REG  :  AE24S021
-# DA6401 - INTRODUCTION TO DEEP LEARNING (JAN-MAY 2025)
-#ASSIGNMENT - 1  
+# A B KESHAV KUMAR
+# DA6401 - DEEP LEARNING (JAN-MAY 2025)
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 import argparse
 import numpy as np
@@ -33,7 +32,7 @@ args = parser.parse_args()
 # Data Preprocessing:
 (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
 
-#------------------------------------------Question 1 - Visualizing sample images------------------------------------------------------------------------------------------------------
+#------------------------------------------Visualizing sample images------------------------------------------------------------------------------------------------------
 def visualize_samples(X, y, num_samples=5):
     plt.figure(figsize=(12, 3))
     for i in range(num_samples):
@@ -53,7 +52,7 @@ X_test = X_test.reshape(X_test.shape[0], -1).astype('float32') / 255
 print(f"Training data shape: {X_train.shape}")
 print(f"Test data shape: {X_test.shape}")
 
-#-------------------------------------------Question 2 - Feedforward NeuralNetwork-------------------------------------------------------------------------------------------
+#-------------------------------------------Feedforward NeuralNetwork-------------------------------------------------------------------------------------------
 
 class FeedforwardNeuralNetwork:
     def __init__(self, input_size, num_classes, num_layers, hidden_size, activation):
@@ -110,7 +109,7 @@ class FeedforwardNeuralNetwork:
         exp_Z = np.exp(Z - np.max(Z, axis=0, keepdims=True))
         return exp_Z / np.sum(exp_Z, axis=0, keepdims=True)
     
-    #--------------------------------------------Question 3 : Backpropogation-------------------------------------------------------------------------------------------------------    
+    #--------------------------------------------Backpropogation-------------------------------------------------------------------------------------------------------    
     def backward(self, X, y):
         m = X.shape[0]
         y_encoded = self.one_hot_encode(y)
@@ -362,7 +361,7 @@ for name, accuracy in results.items():
 
 
 
-#--------------------------------------------------QUESTION 4,5,6 : WANDB----------------------------------------------------------------------------------------------------
+#--------------------------------------------------WANDB----------------------------------------------------------------------------------------------------
 from sklearn.model_selection import train_test_split
 
 # Defining a dictionary for optimizers with lower-case keys
@@ -469,11 +468,9 @@ sweep_id = wandb.sweep(sweep_config, project="fashion_mnist_sweep_clean")
 
 # Launch the sweep agent, 60 trials
 wandb.agent(sweep_id, sweep_train, count=10)
-#-------------------------------------------------------Question 7 - Confusion Matrix----------------------------------------------------------------------------
-#Accurate results of Question 7 are obtained after commenting out Question 6.
-import wandb
-import numpy as np
-import matplotlib
+#-------------------------------------------------------Confusion Matrix----------------------------------------------------------------------------
+
+
 
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
@@ -569,4 +566,3 @@ def sweep_train():
     plt.close(fig)
 
 wandb.agent(sweep_id, function=sweep_train)
-#*******************************************************END OF CODE*********************************************************************************************************
