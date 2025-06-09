@@ -11,5 +11,5 @@ This repository was submitted as a part of assignment 1 - DA6401, Deep Learning,
 Instructions to run will be updated soon !!
 
 ## Contributer:
-A B Keshav Kumar (AE24S021)
+A B Keshav Kumar 
 Indian Institute of Technology, Madras.
